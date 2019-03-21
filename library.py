@@ -26,7 +26,6 @@ import time
 # will slow down transmission so you can keep up. We expect that most commands
 # will be shorter than this.
 COMMAND_BUFFER_SIZE = 256
-PORT = 7777
 
 def CreateServerSocket(port):
   """Creates a socket that listens on a specified port.
@@ -42,7 +41,7 @@ def CreateServerSocket(port):
     #TODO: Implement CreateServerSocket Function
     #############################################
   server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  server_sock.bind(('localhost', PORT))
+  server_sock.bind(('localhost', port))
   server_sock.listen()
   return server_sock
 

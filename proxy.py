@@ -61,23 +61,52 @@ def CheckCachedResponse(command_line, cache):
   #TODO: Implement section
   ############################
   
+def SendText(sock, text):
+  """Sends the result over the socket along with a newline."""
+  sock.send(text.encode() + b"\n")
 
 
 def ProxyClientCommand(sock, server_addr, server_port, cache):
-  """Receives a command from a client and forwards it to a server:port.
 
-  A single command is read from `sock`. That command is passed to the specified
-  `server`:`port`. The response from the server is then passed back through
-  `sock`.
+    command_line = library.ReadCommand(sock)
+    command, name, text = library.ParseCommand(command_line)
+    returning_str = ""
 
-  Args:
-    sock: A TCP socket that connects to the client.
-    server_addr: A string with the name of the server to forward requests to.
-    server_port: An int from 0 to 2^16 with the port the server is listening on.
-    cache: A KeyValueStore object that maintains a temorary cache.
-    max_age_in_sec: float. Cached values older than this are re-retrieved from
-      the server.
-  """
+    if(command == "GET"):
+      if(name in cache.keyvalue):
+        returning_text = name + " = " + cache.keyvalue[name] + "     ( Returned from proxy)    "
+        SendText(sock, returning_text ) #what if proxy doesn't have it but server might
+      else:
+        SendText(sock, "Not found in Proxy server")
+
+    elif(command == "PUT"):
+      cache.keyvalue[name] = text
+      returning_str = "PUT "+ name + "=" + text
+      SendText(sock,returning_str )
+
+    else:#command = "DUMP"
+      for key in cache.keyvalue:
+        returning_str = returning_str + key + " " + cache.keyvalue[key] + "\n"
+      SendText(sock, returning_str)
+    return
+    #if get, check in cache return if exists otherwise forward it to main server
+    #if post, update cache forward it to main server
+    #if dump, forward it to main server
+
+"""Receives a command from a client and forwards it to a server:port.
+
+A single command is read from `sock`. That command is passed to the specified
+`server`:`port`. The response from the server is then passed back through
+`sock`.
+
+Args:
+  sock: A TCP socket that connects to the client.
+  server_addr: A string with the name of the server to forward requests to.
+  server_port: An int from 0 to 2^16 with the port the server is listening on.
+  cache: A KeyValueStore object that maintains a temorary cache.
+  max_age_in_sec: float. Cached values older than this are re-retrieved from
+    the server.
+"""
 
   ###########################################
   #TODO: Implement ProxyClientCommand
