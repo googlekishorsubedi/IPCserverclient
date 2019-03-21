@@ -84,10 +84,11 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
         SendText(sock, returning_text ) #what if proxy doesn't have it but server might
       else:
         data = ForwardCommandToServer(command_line, server_addr, server_port)
+        cache.keyvalue[name] = data
         sock.send(data + b"\n")
 
     elif(command == "PUT"):
-      cache.keyvalue[name] = text
+      #cache.keyvalue[name] = text
       returning_str = "PUT "+ name + "=" + text
       ForwardCommandToServer(command_line, server_addr, server_port)
       SendText(sock,returning_str)

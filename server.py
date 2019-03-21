@@ -91,7 +91,7 @@ def GetCommand(name, database):
 def DumpCommand(database):
   allkeyvalues = ""
   for key in database.keyvalue:
-    allkeyvalues = allkeyvalues + key + database.keyvalue[key] + "\n"
+    allkeyvalues = allkeyvalues + key + " " + database.keyvalue[key] + "\n"
   return allkeyvalues
   """Creates a function to handle the DUMP command for a server.
 
