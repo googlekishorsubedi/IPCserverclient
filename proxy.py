@@ -15,6 +15,7 @@ from __future__ import division
 from __future__ import print_function
 
 import library
+import socket 
 
 # Where to find the server. This assumes it's running on the smae machine
 # as the proxy, but on a different port.
@@ -31,6 +32,11 @@ MAX_CACHE_AGE_SEC = 60.0  # 1 minute
 
 
 def ForwardCommandToServer(command, server_addr, server_port):
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((server_addr, server_port))
+    s.sendall(command.encode())
+    data = s.recv(1024)
+    return data
   """Opens a TCP socket to the server, sends a command, and returns response.
 
   Args:
@@ -77,17 +83,18 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
         returning_text = name + " = " + cache.keyvalue[name] + "     ( Returned from proxy)    "
         SendText(sock, returning_text ) #what if proxy doesn't have it but server might
       else:
-        SendText(sock, "Not found in Proxy server")
+        data = ForwardCommandToServer(command_line, server_addr, server_port)
+        sock.send(data + b"\n")
 
     elif(command == "PUT"):
       cache.keyvalue[name] = text
       returning_str = "PUT "+ name + "=" + text
-      SendText(sock,returning_str )
+      ForwardCommandToServer(command_line, server_addr, server_port)
+      SendText(sock,returning_str)
 
     else:#command = "DUMP"
-      for key in cache.keyvalue:
-        returning_str = returning_str + key + " " + cache.keyvalue[key] + "\n"
-      SendText(sock, returning_str)
+      data = ForwardCommandToServer(command_line, server_addr, server_port)
+      sock.send(data + b"\n")
     return
     #if get, check in cache return if exists otherwise forward it to main server
     #if post, update cache forward it to main server
