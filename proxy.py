@@ -82,16 +82,16 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
     if(command == "GET"):
       if(name in cache.keyvalue):
         timeElapsed = time.time() - (cache.keyvalue[name])[1]
-        if(timeElapsed < 5):
+        if(timeElapsed < MAX_CACHE_AGE_SEC ):
           returning_text = (cache.keyvalue[name])[0].decode() + "     ( Returned from proxy)    "
-          SendText(sock, returning_text ) #what if proxy doesn't have it but server might
+          SendText(sock, returning_text ) 
         else: 
           data = ForwardCommandToServer(command_line, server_addr, server_port)
           cache.keyvalue[name] = [data, time.time() ]
           sock.send(data + b"\n")
       else:
         data = ForwardCommandToServer(command_line, server_addr, server_port)
-        cache.keyvalue[name] = [data, time.time() ]
+        cache.keyvalue[name] = [data, time.time() ] #only if server found the key
         sock.send(data + b"\n")
 
     elif(command == "PUT"): 
