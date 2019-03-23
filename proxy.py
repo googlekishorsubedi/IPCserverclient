@@ -14,6 +14,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
 import library
 import socket 
 
@@ -80,18 +81,27 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
 
     if(command == "GET"):
       if(name in cache.keyvalue):
-        returning_text = name + " = " + cache.keyvalue[name] + "     ( Returned from proxy)    "
-        SendText(sock, returning_text ) #what if proxy doesn't have it but server might
+        timeElapsed = time.time() - (cache.keyvalue[name])[1]
+        if(timeElapsed < 5):
+          returning_text = (cache.keyvalue[name])[0].decode() + "     ( Returned from proxy)    "
+          SendText(sock, returning_text ) #what if proxy doesn't have it but server might
+        else: 
+          data = ForwardCommandToServer(command_line, server_addr, server_port)
+          cache.keyvalue[name] = [data, time.time() ]
+          sock.send(data + b"\n")
       else:
         data = ForwardCommandToServer(command_line, server_addr, server_port)
-        cache.keyvalue[name] = data
+        cache.keyvalue[name] = [data, time.time() ]
         sock.send(data + b"\n")
 
-    elif(command == "PUT"):
-      #cache.keyvalue[name] = text
-      returning_str = "PUT "+ name + "=" + text
-      ForwardCommandToServer(command_line, server_addr, server_port)
-      SendText(sock,returning_str)
+    elif(command == "PUT"): 
+      if(name == None or text == None):
+        returning_str = "Key And Value both needed for PUT operation\n"
+        SendText(sock,returning_str)
+      else:
+        returning_str = name + " = " + text
+        ForwardCommandToServer(command_line, server_addr, server_port)
+        SendText(sock,returning_str)
 
     else:#command = "DUMP"
       data = ForwardCommandToServer(command_line, server_addr, server_port)
@@ -135,7 +145,7 @@ def main():
     print('Received connection from %s:%d' % (address, port))
     ProxyClientCommand(client_sock, SERVER_ADDRESS, SERVER_PORT,
                        cache)
-
+    client_sock.close()
   #################################
   #TODO: Close socket's connection
   #################################

@@ -47,7 +47,7 @@ LISTENING_PORT = 7777
 
 def PutCommand(name, text, database):
   database.keyvalue[name] = text
-  return name + text
+  return name + "=" + text
 
   """Handle the PUT command for a server.
 
