@@ -72,6 +72,10 @@ def SendText(sock, text):
   """Sends the result over the socket along with a newline."""
   sock.send(text.encode() + b"\n")
 
+def ServerFound(data):
+  if(data == "Key Not Found\n"):
+    return False
+  return True 
 
 def ProxyClientCommand(sock, server_addr, server_port, cache):
 
@@ -91,7 +95,8 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
           sock.send(data + b"\n")
       else:
         data = ForwardCommandToServer(command_line, server_addr, server_port)
-        cache.keyvalue[name] = [data, time.time() ] #only if server found the key
+        if(ServerFound(data)== True):
+          cache.keyvalue[name] = [data, time.time() ] #cache the data only if server found the key
         sock.send(data + b"\n")
 
     elif(command == "PUT"): 

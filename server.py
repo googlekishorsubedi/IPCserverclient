@@ -70,7 +70,7 @@ def PutCommand(name, text, database):
 
 def GetCommand(name, database):
   if(name not in database.keyvalue):
-    return "Cannot find key value pair with the key " + name
+    return "Key Not Found" 
   return database.keyvalue[name]
   """Handle the GET command for a server.
 
