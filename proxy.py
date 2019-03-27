@@ -83,17 +83,17 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
     command, name, text = library.ParseCommand(command_line)
     returning_str = ""
 
-    if(command == "GET"):
+    if(command == "GET"):#if GET, name might be in cache or not
       if(name in cache.keyvalue):
         timeElapsed = time.time() - (cache.keyvalue[name])[1]
-        if(timeElapsed < MAX_CACHE_AGE_SEC ):
+        if(timeElapsed < MAX_CACHE_AGE_SEC ):#No problem with cached information if last cached time is less than 60 seconds.
           returning_text = (cache.keyvalue[name])[0].decode() + "     ( Returned from proxy)    "
           SendText(sock, returning_text ) 
         else: 
-          data = ForwardCommandToServer(command_line, server_addr, server_port)
+          data = ForwardCommandToServer(command_line, server_addr, server_port)#If last cached time is more than 60 seconds, pull the info from main server
           cache.keyvalue[name] = [data, time.time() ]
           sock.send(data + b"\n")
-      else:
+      else:#if not found in cache, forward to the server. Server will handle KEY NOT FOUND error 
         data = ForwardCommandToServer(command_line, server_addr, server_port)
         if(ServerFound(data)== True):
           cache.keyvalue[name] = [data, time.time() ] #cache the data only if server found the key
@@ -108,9 +108,11 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
         ForwardCommandToServer(command_line, server_addr, server_port)
         SendText(sock,returning_str)
 
-    else:#command = "DUMP"
+    elif (command == "DUMP"): #command = "DUMP"
       data = ForwardCommandToServer(command_line, server_addr, server_port)
       sock.send(data + b"\n")
+    else:
+      SendText(sock, 'Unknown command %s' % command)
     return
     #if get, check in cache return if exists otherwise forward it to main server
     #if post, update cache forward it to main server
